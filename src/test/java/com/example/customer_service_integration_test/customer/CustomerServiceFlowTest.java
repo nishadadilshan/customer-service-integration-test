@@ -33,13 +33,22 @@ public class CustomerServiceFlowTest extends AbstractTestNGSpringContextTests {
     protected ObjectMapper objectMapper;
     protected String baseUrl;
     protected String createEndpoint;
+
+    protected String updateEndpoint;
     protected Properties testProperties;
 
 
-    @DataProvider(name = "customerData")
+    @DataProvider(name = "customer_data")
     public Object[][] customerData() {
         return new Object[][]{
                 {"testName", "Stockholm", "test@gmail.com", true},
+        };
+    }
+
+    @DataProvider(name = "customer_update_data")
+    public Object[][] customerUpdateData() {
+        return new Object[][]{
+                {"Updated name", "updated Stockholm", "updated@gmail.com", true},
         };
     }
 
@@ -82,6 +91,7 @@ public class CustomerServiceFlowTest extends AbstractTestNGSpringContextTests {
         loadTestProperties();
         baseUrl = getTestProperty("api.base.url", "http://localhost:8081");
         createEndpoint = getTestProperty("api.customer.create.endpoint", "/api/customer/create");
+        updateEndpoint = getTestProperty("api.customer.create.endpoint", "/api/customer/update");
     }
 
     protected void loadTestProperties() {
@@ -148,7 +158,7 @@ public class CustomerServiceFlowTest extends AbstractTestNGSpringContextTests {
     }
 
     // Alternative test method using TestRestTemplate (Spring Boot test utility)
-    @Test(dataProvider = "invalid_customer_data", invocationCount = 1, threadPoolSize = 1)
+    @Test(dataProvider = "invalid_customer_data", invocationCount = 1, threadPoolSize = 1, enabled = false)
     public void test_invalid_customer_data_with_test_rest_template(String name, String address, String email, boolean status) {
         // Create customer payload with invalid data
         Customer customer = Customer.builder()
@@ -166,22 +176,22 @@ public class CustomerServiceFlowTest extends AbstractTestNGSpringContextTests {
         String createUrl = baseUrl + createEndpoint;
 
         // Method 2: Using TestRestTemplate (Spring Boot test utility)
-        org.springframework.boot.test.web.client.TestRestTemplate testRestTemplate = 
+        org.springframework.boot.test.web.client.TestRestTemplate testRestTemplate =
             new org.springframework.boot.test.web.client.TestRestTemplate();
-        
+
         ResponseEntity<Void> response = testRestTemplate.postForEntity(createUrl, request, Void.class);
-        
+
         // Verify the response status
-        Assert.assertEquals(response.getStatusCode(), HttpStatus.BAD_REQUEST, 
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.BAD_REQUEST,
             "Expected 400 Bad Request for invalid data: " + email);
-        
+
         System.out.println("✅ TestRestTemplate correctly received 400 Bad Request for invalid data");
-        
+
         // Verify that no customer was saved to database with this invalid email
         verifyCustomerNotSavedInDatabase(email);
     }
 
-    @Test(dataProvider = "customerData", invocationCount = 1, threadPoolSize = 1)
+    @Test(dataProvider = "customer_data", invocationCount = 1, threadPoolSize = 1)
     public void testCreateCustomerApi(String name, String address, String email, boolean status) {
         try {
             // Create customer payload as JSON string using properties
@@ -201,7 +211,7 @@ public class CustomerServiceFlowTest extends AbstractTestNGSpringContextTests {
             // Make POST request to create customer
             String createUrl = baseUrl + createEndpoint;
 
-            //SAVE customer Ojbject here
+            //SAVE customer object here
             ResponseEntity<Customer> response = restTemplate.postForEntity(createUrl, request, Customer.class);
 
             // Verify response
@@ -240,6 +250,48 @@ public class CustomerServiceFlowTest extends AbstractTestNGSpringContextTests {
         } catch (Exception e) {
             Assert.fail("Test failed with exception:--->> " + e.getMessage(), e);
         }
+    }
+
+    @Test(dataProvider = "customer_update_data", invocationCount = 1, threadPoolSize = 1)
+    public void test_update_customer_data(String name, String address, String email, boolean status){
+        Customer customer = Customer.builder()
+                .name(name)
+                .address(address)
+                .email(email)
+                .status(status)
+                .build();
+
+        HttpHeaders headers = createHeaders();
+
+        // Create HTTP entity with customer JSON
+        HttpEntity<Customer> request = new HttpEntity<>(customer, headers);
+
+        // Make POST request to update customer
+        String createUrl = baseUrl + updateEndpoint;
+
+        //update customer object here
+        ResponseEntity<Customer> response = restTemplate.postForEntity(createUrl, request, Customer.class);
+
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.OK, "API Should return 200");
+        Assert.assertNotNull(response.getBody(), " Response body should not be null");
+
+        Customer updatedCustomer = response.getBody();
+
+        // Verify the values match what we sent
+        Assert.assertEquals(updatedCustomer.getName(), customer.getName(), "Customer name should match");
+        Assert.assertEquals(updatedCustomer.getEmail(), customer.getEmail(), "Customer email should match");
+        Assert.assertEquals(updatedCustomer.getAddress(), customer.getAddress(), "Customer address should match");
+        Assert.assertEquals(updatedCustomer.isStatus(), customer.isStatus(), "Customer status should be true");
+
+        // Verify customerId was auto-generated (not 0)
+        long customerId = updatedCustomer.getCustomerId();
+        Assert.assertNotEquals(customerId, 0, "Customer ID should be auto-generated");
+
+        System.out.println("Customer created successfully with ID: " + customerId);
+        System.out.println("Response: " + response.getBody());
+
+        verifyCustomerDataSavedInDatabase(customerId, customer);
+
     }
 
     /**

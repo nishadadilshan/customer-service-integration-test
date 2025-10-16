@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Customer Service Integration Test Suite">
+    <test name="Customer API Tests">
+        <classes>
+            <class name="com.example.customer_service_integration_test.customer.CustomerServiceFlowTest"/>
+        </classes>
+    </test>
+</suite>

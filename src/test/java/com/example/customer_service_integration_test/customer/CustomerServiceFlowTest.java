@@ -192,7 +192,7 @@ public class CustomerServiceFlowTest extends AbstractTestNGSpringContextTests {
     }
 
     @Test(dataProvider = "customer_data", invocationCount = 1, threadPoolSize = 1)
-    public void testCreateCustomerApi(String name, String address, String email, boolean status) {
+    public void test_create_customer(String name, String address, String email, boolean status) {
         try {
             // Create customer payload as JSON string using properties
             Customer customer = Customer.builder()

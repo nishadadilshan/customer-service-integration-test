@@ -3,7 +3,7 @@
 <suite name="Customer Service Integration Test Suite">
     <test name="Customer API Tests">
         <classes>
-            <class name="com.example.customer_service_integration_test.customer.CustomerServiceFlowTest"/>
+            <class name="com.example.customer_service_integration_test.customer.*"/>
         </classes>
     </test>
 </suite>

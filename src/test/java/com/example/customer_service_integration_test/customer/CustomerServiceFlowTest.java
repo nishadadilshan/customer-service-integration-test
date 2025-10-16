@@ -34,6 +34,8 @@ public class CustomerServiceFlowTest extends AbstractTestNGSpringContextTests {
     protected String baseUrl;
     protected String createEndpoint;
 
+    protected  String deleteEndpoint;
+
     protected String updateEndpoint;
     protected Properties testProperties;
 
@@ -42,6 +44,13 @@ public class CustomerServiceFlowTest extends AbstractTestNGSpringContextTests {
     public Object[][] customerData() {
         return new Object[][]{
                 {"testName", "Stockholm", "test@gmail.com", true},
+        };
+    }
+
+    @DataProvider(name = "customer_delete_customerId")
+    public  Object[][] customerDeleteId(){
+        return new  Object[][]{
+                {11L}
         };
     }
 
@@ -91,7 +100,8 @@ public class CustomerServiceFlowTest extends AbstractTestNGSpringContextTests {
         loadTestProperties();
         baseUrl = getTestProperty("api.base.url", "http://localhost:8081");
         createEndpoint = getTestProperty("api.customer.create.endpoint", "/api/customer/create");
-        updateEndpoint = getTestProperty("api.customer.create.endpoint", "/api/customer/update");
+        updateEndpoint = getTestProperty("api.customer.update.endpoint", "/api/customer/update");
+        deleteEndpoint =  getTestProperty("api.customer.delete.endpoint", "/api/customer/delete");
     }
 
     protected void loadTestProperties() {
@@ -292,6 +302,29 @@ public class CustomerServiceFlowTest extends AbstractTestNGSpringContextTests {
 
         verifyCustomerDataSavedInDatabase(customerId, customer);
 
+    }
+
+    @Test(dataProvider = "customer_delete_customerId")
+    public void test_delete_customer(Long customer_id){
+        String deleteUrl = baseUrl + deleteEndpoint + "/" + customer_id;
+
+        System.out.println("Url path:" + deleteUrl);
+
+        HttpHeaders headers = createHeaders();
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+        ResponseEntity<Void> response = restTemplate.exchange(
+                deleteUrl,
+                HttpMethod.DELETE,
+                requestEntity,
+                Void.class
+        );
+
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.OK, "API should return 200 OK after delete");
+
+        // Optional: Verify deletion in the database
+        Optional<CustomerEntity> deletedCustomer = customerRepository.findByCustomerId(customer_id);
+        Assert.assertFalse(deletedCustomer.isPresent(), "Customer should be deleted from the database");
     }
 
     /**

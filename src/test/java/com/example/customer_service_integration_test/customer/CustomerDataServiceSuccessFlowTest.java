@@ -3,7 +3,8 @@ package com.example.customer_service_integration_test.customer;
 import com.example.customer_service_integration_test.BaseTest;
 import com.example.customer_service_integration_test.model.CustomerData;
 import net.datafaker.Faker;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -69,7 +70,7 @@ public class CustomerDataServiceSuccessFlowTest extends BaseTest {
     }
 
     @Test(dataProvider = "customer_data", invocationCount = 1, threadPoolSize = 1)
-    public void test_update_customer_data(String name, String address, String email, boolean status){
+    public void test_update_customer_data(String name, String address, String email, boolean status) {
         CustomerData customerData = CustomerData.builder()
                 .name(name)
                 .address(address)

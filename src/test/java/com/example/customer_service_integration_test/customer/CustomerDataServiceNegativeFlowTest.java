@@ -67,7 +67,6 @@ public class CustomerDataServiceNegativeFlowTest extends BaseTest {
         
         // Verify that no customer was saved to database with this invalid email
         verifyCustomerNotSavedInDatabase(email);
-        
 
     }
 }

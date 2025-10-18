@@ -3,7 +3,9 @@
 <suite name="Customer Service Integration Test Suite">
     <test name="Customer API Tests">
         <classes>
-            <class name="com.example.customer_service_integration_test.customer.*"/>
+            <class name="com.example.customer_service_integration_test.customer.CustomerDataServiceSuccessFlowTest"/>
+            <class name="com.example.customer_service_integration_test.customer.CustomerDataServiceNegativeFlowTest"/>
+            <class name="com.example.customer_service_integration_test.customer.CustomerDataServiceNegativeFlowRATest"/>
         </classes>
     </test>
 </suite>

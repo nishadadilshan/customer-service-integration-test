@@ -2,11 +2,8 @@ package com.example.customer_service_integration_test.model;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
 @Builder
 public class CustomerData {
     private Long customerId;
